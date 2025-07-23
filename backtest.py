@@ -1,6 +1,24 @@
 import backtrader as bt
 from strategy import InsiderStrategy
 from datafeed import load_data
+from visualizer import plot_trade_returns
+
+
+class TradeListAnalyzer(bt.Analyzer):
+    def __init__(self):
+        self.trades = []
+
+    def notify_trade(self, trade):
+        if trade.isclosed:
+            self.trades.append({
+                'ticker': trade.data._name,
+                'entry_date': bt.num2date(trade.dtopen).date(),
+                'exit_date': bt.num2date(trade.dtclose).date(),
+                'pnl': trade.pnlcomm,
+            })
+
+    def get_analysis(self):
+        return self.trades
 
 # backtest engine
 def run_backtest(score_dict, start, end, hold_days=30, top_n=3, cash=100000):
@@ -21,6 +39,7 @@ def run_backtest(score_dict, start, end, hold_days=30, top_n=3, cash=100000):
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe')
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
     cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
+    cerebro.addanalyzer(TradeListAnalyzer, _name='trades')
 
     cerebro.addstrategy(
         InsiderStrategy,
@@ -36,6 +55,7 @@ def run_backtest(score_dict, start, end, hold_days=30, top_n=3, cash=100000):
     sharpe = strat.analyzers.sharpe.get_analysis()
     drawdown = strat.analyzers.drawdown.get_analysis()
     returns = strat.analyzers.returns.get_analysis()
+    trade_list = strat.analyzers.trades.get_analysis()
 
     #Print summary
     print("\n===== BACKTEST SUMMARY =====")
@@ -47,6 +67,7 @@ def run_backtest(score_dict, start, end, hold_days=30, top_n=3, cash=100000):
     print(f"Max Drawdown: {drawdown['max']['drawdown']:.2f}%")
 
     cerebro.plot(style='candlestick')
+    plot_trade_returns(trade_list)
     return {
         'final_value': cerebro.broker.getvalue(),
         'return_total': returns['rtot'],

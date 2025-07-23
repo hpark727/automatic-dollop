@@ -87,9 +87,10 @@ class InsiderData:
     def get_score(self, ticker):
         if self.scores is None:
             raise ValueError('Please run compute_score beforehand.')
-        row = self.scores[self.scores['Ticker']] == ticker
-        score = float(row['Score'].values[0])
-        return score
+        row = self.scores[self.scores['Ticker'] == ticker]
+        if row.empty:
+            return 0.0
+        return float(row['Score'].values[0])
     
     def get_df(self):
         if self.clean_data is None:
