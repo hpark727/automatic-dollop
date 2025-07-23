@@ -1,7 +1,6 @@
 import backtrader as bt
 from strategy import InsiderStrategy
 from datafeed import load_data
-from visualizer import plot_trade_returns
 
 
 class TradeListAnalyzer(bt.Analyzer):
@@ -63,15 +62,18 @@ def run_backtest(score_dict, start, end, hold_days=30, top_n=3, cash=100000):
     print(f"Final Portfolio Value: ${cerebro.broker.getvalue():,.2f}")
     print(f"Total Return: {returns['rtot']*100:.2f}%")
     print(f"Annual Return: {returns['rnorm']*100:.2f}%")
-    print(f"Sharpe Ratio: {sharpe.get('sharperatio', 'N/A'):.2f}")
+    sr = sharpe.get('sharperatio')
+    sr_display = f"{sr:.2f}" if sr is not None else "N/A"
+    print(f"Sharpe Ratio: {sr_display}")
     print(f"Max Drawdown: {drawdown['max']['drawdown']:.2f}%")
 
     cerebro.plot(style='candlestick')
-    plot_trade_returns(trade_list)
     return {
         'final_value': cerebro.broker.getvalue(),
         'return_total': returns['rtot'],
         'return_annual': returns['rnorm'],
         'sharpe': sharpe.get('sharperatio', None),
-        'max_drawdown': drawdown['max']['drawdown']
+        'max_drawdown': drawdown['max']['drawdown'],
+        'trades': trade_list,
     }
+
