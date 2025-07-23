@@ -10,11 +10,14 @@ def _prepare_trade_df(trades: list) -> pd.DataFrame:
     return df
 
 
-def plot_trade_returns(trades: list) -> None:
-    """Plot cumulative profit/loss for each ticker over time."""
+def plot_trade_returns(trades: list, show: bool = True):
+    """Plot cumulative profit/loss for each ticker over time.
+
+    Returns the matplotlib Figure for further processing when ``show`` is False.
+    """
     if not trades:
         print("No trades to plot")
-        return
+        return None
 
     df = _prepare_trade_df(trades)
 
@@ -32,14 +35,20 @@ def plot_trade_returns(trades: list) -> None:
     ax.set_ylabel("Cumulative PnL")
     ax.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
-    plt.show()
+    fig = ax.get_figure()
+    if show:
+        plt.show()
+    return fig
 
 
-def plot_portfolio_returns(trades: list) -> None:
-    """Plot cumulative profit/loss for the portfolio over time."""
+def plot_portfolio_returns(trades: list, show: bool = True):
+    """Plot cumulative profit/loss for the portfolio over time.
+
+    Returns the matplotlib Figure for further processing when ``show`` is False.
+    """
     if not trades:
         print("No trades to plot")
-        return
+        return None
 
     df = _prepare_trade_df(trades)
 
@@ -51,4 +60,7 @@ def plot_portfolio_returns(trades: list) -> None:
     ax.set_ylabel("Cumulative PnL")
     ax.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
-    plt.show()
+    fig = ax.get_figure()
+    if show:
+        plt.show()
+    return fig

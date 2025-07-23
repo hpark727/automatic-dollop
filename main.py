@@ -7,12 +7,12 @@ from visualizer import plot_trade_returns, plot_portfolio_returns
 def main():
     # Step 1: Generate signals
     insider = InsiderData()
-    insider.get_data().clean_values().compute_score()
+    start_date = "2024-01-01"
+    end_date = "2025-06-01"
+    insider.get_data(start_date, end_date).clean_values().compute_score()
     score_dict = format_scores_to_dict(insider.get_df())
 
     # Step 2: Define backtest params
-    start_date = "2024-01-01"
-    end_date = "2025-06-01"
     initial_cash = 100000
     hold_days = 60
     top_n = 3

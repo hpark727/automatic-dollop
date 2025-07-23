@@ -10,17 +10,44 @@ class InsiderData:
         self.clean_data = None
         self.scores = None
 
-    def get_data(self):
-        # Fetch insider trading data from OpenInsider
-        url = 'http://openinsider.com/screener?s=&o=&pl=&ph=&ll=&lh=&fd=730&fdr=&td=-1&tdr=01%2F01%2F2024+-+06%2F01%2F2025&fdlyl=&fdlyh=&daysago=&xp=1&vl=&vh=&ocl=&och=&sic1=-1&sicl=100&sich=9999&grp=0&nfl=&nfh=&nil=&nih=&nol=&noh=&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=100&page=1'
+    def get_data(self, start_date: str = None, end_date: str = None, count: int = 500):
+        """Fetch insider trading data from OpenInsider.
+
+        Parameters
+        ----------
+        start_date, end_date : str
+            Date range in ``YYYY-MM-DD`` format.
+        count : int
+            Number of rows to request from OpenInsider.
+        """
+
+        # Build date range portion of the query
+        if start_date is None:
+            start_date = pd.Timestamp.today() - pd.Timedelta(days=365)
+        if end_date is None:
+            end_date = pd.Timestamp.today()
+
+        start = pd.to_datetime(start_date).strftime('%m/%d/%Y')
+        end = pd.to_datetime(end_date).strftime('%m/%d/%Y')
+
+        date_range = f"{start}+-+{end}"
+        url = (
+            "http://openinsider.com/screener?s=&o=&pl=&ph=&ll=&lh=&fd=730&fdr="
+            f"&td=-1&tdr={date_range}&fdlyl=&fdlyh=&daysago=&xp=1&vl=&vh=&ocl=&och="
+            f"&sic1=-1&sicl=100&sich=9999&grp=0&nfl=&nfh=&nil=&nih=&nol=&noh=&v2l="
+            f"&v2h=&oc2l=&oc2h=&sortcol=0&cnt={count}&page=1"
+        )
         df = pd.read_html(url)[11]
         df.columns = df.columns.str.replace('\xa0', ' ', regex=False).str.strip()
+
+        # Focus on large purchase transactions
+        df['Value'] = df['Value'].replace({r'\$': '', ',': ''}, regex=True).astype(float)
+        df = df[df['Value'] >= 100000]
 
         # Clean and normalize
         df['Ticker'] = df['Ticker'].str.upper().str.strip()
         df['Filing Date'] = pd.to_datetime(df['Filing Date'], errors='coerce').dt.date
         df['Trade Date'] = pd.to_datetime(df['Trade Date'], errors='coerce').dt.date
-        df['Value'] = df['Value'].replace({r'\$': '', ',': ''}, regex=True).astype(float)
         df['Price'] = df['Price'].replace({r'\$': '', ',': ''}, regex=True).astype(float)
 
         # Handle ΔOwn
