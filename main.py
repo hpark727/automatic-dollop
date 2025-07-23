@@ -1,7 +1,7 @@
 from backtest import run_backtest
 from insider_data import InsiderData
 from formatter import format_scores_to_dict
-from visualizer import plot_trade_returns
+from visualizer import plot_trade_returns, plot_portfolio_returns
 
 
 def main():
@@ -32,7 +32,12 @@ def main():
         if k != 'trades':
             print(f"{k}: {v}")
 
-    plot_trade_returns(results.get('trades', []))
+    trades = results.get('trades', [])
+    if not trades:
+        print("No trades recorded.")
+    else:
+        plot_trade_returns(trades)
+        plot_portfolio_returns(trades)
 
 
 if __name__ == "__main__":
