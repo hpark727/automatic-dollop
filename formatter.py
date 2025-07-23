@@ -3,27 +3,16 @@ from technical_analysis import technical_score
 from datetime import datetime
 
 def format_scores_to_dict(df: pd.DataFrame, use_ta: bool = True, ta_weight: float = 0.5) -> dict:
-    """
-    Converts a DataFrame with ['Ticker', 'Trade Date', 'Score'] into a nested dictionary:
-    {
-        'AAPL': {
-            datetime.date(2023, 7, 1): 0.85,
-            datetime.date(2023, 7, 10): 0.9,
-        },
-        ...
-    }
-    Optionally enhances score with a technical analysis overlay.
-    """
     data = {}
     for row in df.itertuples(index=False):
         ticker = row[0]
         date = row[1]
         base_score = row[2]
 
-        # Ensure date is a datetime.date object
-        if isinstance(date, str):
-            date = datetime.strptime(date, "%Y-%m-%d").date()
-
+        if not isinstance(date, datetime):
+            date = pd.to_datetime(date).date()
+        else:
+            date = date.date()
         # Apply TA score if applicable
         ta_score = None
         if use_ta:

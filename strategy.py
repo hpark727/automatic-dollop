@@ -3,7 +3,7 @@ import backtrader as bt
 import pandas as pd
 
 class InsiderStrategy(bt.Strategy):
-    def __init__(self, score_dict, hold_days=30, top_n=5):
+    def __init__(self, score_dict, hold_days=20, top_n=1):
         self.score_dict = score_dict
         self.hold_days = hold_days
         self.top_n = top_n
