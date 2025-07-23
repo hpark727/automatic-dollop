@@ -9,6 +9,11 @@ def load_data(tickers, start_date, end_date):
             if ticker is None:
                 raise KeyError('No ticker found')
             df = yf.download(ticker, start=start_date, end=end_date)
+            if df.empty:
+                print('No data found for ' + ticker)
+                continue
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
             df = df[["Open", "High", "Low", "Close", "Volume"]]
             df = df.dropna()
             df.index.name = "datetime"

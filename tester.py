@@ -1,8 +1,10 @@
 from insider_data import InsiderData
-test = InsiderData(30, 1000000)
-test.get_data()
-test.normalize_values()
-test.filter_trades()
+from formatter import format_scores_to_dict
+test = InsiderData()
+new = test.get_data().clean_values().compute_score()
+score_dict = format_scores_to_dict(new.get_df())
+print(score_dict)
+
 
 
 
