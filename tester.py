@@ -2,8 +2,7 @@ from insider_data import InsiderData
 from formatter import format_scores_to_dict
 test = InsiderData()
 new = test.get_data().clean_values().compute_score()
-score_dict = format_scores_to_dict(new.get_df())
-print(score_dict)
+print(new.clean_data)
 
 
 

@@ -11,9 +11,16 @@ class InsiderData:
         self.scores = None
 
     def get_data(self):
-        # Fetch insider trading data from OpenInsider
-        url = 'http://openinsider.com/screener?s=&o=&pl=&ph=&ll=&lh=&fd=730&fdr=&td=-1&tdr=01%2F01%2F2024+-+06%2F01%2F2025&fdlyl=&fdlyh=&daysago=&xp=1&vl=&vh=&ocl=&och=&sic1=-1&sicl=100&sich=9999&grp=0&nfl=&nfh=&nil=&nih=&nol=&noh=&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=100&page=1'
-        df = pd.read_html(url)[11]
+        base = (
+            "http://openinsider.com/screener?"
+            "s=&o=&pl=&ph=&ll=&lh=&fd=30&daysago=&vl=&vh=&ocl=&och=&"
+            "sic1=-1&sicl=100&sich=9999&grp=0&nfl=&nfh=&nil=&nih=&"
+            "nol=&noh=&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=100&page=1"
+        )
+        try:
+            df = pd.read_html(base)[11]
+        except Exception as e:
+            raise RuntimeError(f"Failed to download insider data: {e}")
         df.columns = df.columns.str.replace('\xa0', ' ', regex=False).str.strip()
 
         # Clean and normalize
@@ -60,9 +67,6 @@ class InsiderData:
         # Map to dataframe
         df["Market Cap"] = df["Ticker"].map(cap_dict)
 
-        # Drop rows with missing data
-        df = df.dropna(subset=["Market Cap"])
-
         # Normalize
         df['Normalized Value'] = df["Value"] / df["Market Cap"] * 100_000 
 
@@ -87,9 +91,10 @@ class InsiderData:
     def get_score(self, ticker):
         if self.scores is None:
             raise ValueError('Please run compute_score beforehand.')
-        row = self.scores[self.scores['Ticker']] == ticker
-        score = float(row['Score'].values[0])
-        return score
+        row = self.scores[self.scores['Ticker'] == ticker]
+        if row.empty:
+            raise KeyError(f"Ticker {ticker} not found in scores")
+        return float(row['Score'].values[0])
     
     def get_df(self):
         if self.clean_data is None:

@@ -55,9 +55,9 @@ class StockScorer:
         prof_score = self.compute_profitability_score()
 
         total_score = (
-            weights['insider'] * insider_score +
-            weights['valuation'] * val_score +
-            weights['growth'] * growth_score +
-            weights['profitability'] * prof_score
+            weights['insider'] * insider_score
+            + weights['valuation'] * val_score
+            + weights['growth'] * growth_score
+            + weights['profitability'] * prof_score
         )
         return total_score
